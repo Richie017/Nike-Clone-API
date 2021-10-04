@@ -6,7 +6,7 @@ import config
 
 app = Flask(__name__)
 app.config.from_object(config.Config)
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres@localhost/nike-clone"
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:postgres@localhost/nike-clone"
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
