@@ -1,6 +1,6 @@
 from flask import Blueprint
 
-from .models import People
+from .models import People, Product, ProductVariant, Category, product_category
 from . import db, app
 
 
