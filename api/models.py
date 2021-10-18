@@ -96,3 +96,51 @@ class User(db.Model):
 
     def __repr__(self):
         return '<id {}: {}>'.format(self.id, self.first_name)
+
+
+class Cart(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    product = db.relationship('product', backref='cart', lazy=True)
+    user = db.relationship('user', backref='cart', lazy=True)
+    quantity = db.Column(db.Float())
+    shipping_details = db.Column(db.JSON)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+
+    __tablename__ = 'cart'
+
+    def __repr__(self):
+        return '<id {}: {}>'.format(self.id, self.product, self.user)
+
+
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    cart = db.relationship('cart', backref='order', lazy=True)
+    user = db.relationship('user', backref='order', lazy=True)
+    total_price = db.Column(db.Float())
+    payment_details = db.Column(db.JSON)
+    order_status = db.Column(db.String(120), nullable=False)
+
+    __tablename__ = 'order'
+
+    def __repr__(self):
+        return '<id {}: {}>'.format(self.id, self.cart, self.user)
+
+
+favorite_products = db.Table('favorite_products',
+                             db.Column('product_id', db.Integer, db.ForeignKey(
+                                 'product.id'), primary_key=True),
+                             db.Column('favorite_id', db.Integer, db.ForeignKey(
+                                 'favorite.id'), primary_key=True)
+                             )
+
+
+class Favorite(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    product = db.relationship('product', secondary=favorite_products, lazy='subquery',
+                              backref=db.backref('favorite', lazy=True))
+    user = db.relationship('user', backref='favorite', lazy=True)
+
+    __tablename__ = 'favorite'
+
+    def __repr__(self):
+        return '<id {}: {}>'.format(self.id, self.product, self.user)
