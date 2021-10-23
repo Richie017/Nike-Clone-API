@@ -1,19 +1,6 @@
-import enum
 from flask_sqlalchemy import SQLAlchemy
-
+from .constants import GenderEnum
 from . import db
-
-
-class People(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), nullable=False)
-    country = db.Column(db.String(40))
-    color = db.Column(db.String(120), nullable=False)
-
-    __tablename__ = 'person'
-
-    def __repr__(self):
-        return '<id {}: {}>'.format(self.id, self.name)
 
 
 product_category = db.Table('product_categories',
@@ -32,9 +19,10 @@ class Product(db.Model):
     category = db.relationship('categories', secondary=product_category,
                                lazy='subquery', backref=db.backref('product', lazy=True))
     status = db.Column(db.String(120), nullable=False)
-    variants = db.relationship('product_variant', backref='product', lazy=True)
+    variants = db.relationship(
+        'product_variant', backref='product', lazy='joined')
     tag = db.Column(db.String(120), nullable=False)
-    #meta = db.Column(db.JSON)
+    meta = db.Column(db.JSON)
 
     __tablename__ = 'product'
 
@@ -70,16 +58,6 @@ class Category(db.Model):
         return '<id {}: {}>'.format(self.id, self.main_category)
 
 
-class GenderEnum(enum.Enum):
-    male = 'male'
-    female = 'female'
-
-
-class NotificationEnum(enum.Enum):
-    yes = 'yes'
-    no = 'no'
-
-
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(100))
@@ -90,7 +68,7 @@ class User(db.Model):
     password = db.Column(db.String())
     country = db.Column(db.String(30))
     is_notification_enabled = db.Column(
-        db.Enum(NotificationEnum), default=NotificationEnum.no)
+        db.Boolean(), default=False)
 
     __tablename__ = 'user'
 
@@ -98,10 +76,19 @@ class User(db.Model):
         return '<id {}: {}>'.format(self.id, self.first_name)
 
 
+product_cart = db.Table('product_cart',
+                        db.Column('cart_id', db.Integer, db.ForeignKey(
+                            'cart.id'), primary_key=True),
+                        db.Column('product_id', db.Integer, db.ForeignKey(
+                            'product.id'), primary_key=True)
+                        )
+
+
 class Cart(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    product = db.relationship('product', backref='cart', lazy=True)
-    user = db.relationship('user', backref='cart', lazy=True)
+    product = db.relationship('user', secondary=product_cart,
+                              lazy='subquery', backref=db.backref('cart_product', lazy=True))
+    user = db.relationship('user', backref='cart_user', lazy='joined')
     quantity = db.Column(db.Float())
     shipping_details = db.Column(db.JSON)
     order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
