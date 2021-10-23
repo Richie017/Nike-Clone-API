@@ -1,12 +1,12 @@
 from flask import Blueprint
 
-from .models import People, Product, ProductVariant, Category, product_category
+from .models import Product, ProductVariant, Category, product_category
 from . import db, app
 
 
 @app.route("/")
 def index():
-    print(People.query.all())
+    print(Product.query.all())
     return f"This is the API server for Nike-Clone Project developed by Potato Tech!"
 
 
